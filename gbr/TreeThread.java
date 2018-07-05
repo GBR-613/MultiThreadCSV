@@ -7,16 +7,15 @@ public class TreeThread extends Thread {
 
 	private boolean populateTree = true;
 	private String title = "";
-	private boolean splitWords = false;
-	private Object caller;	
-	private int threshold;
+	private boolean splitWords = false;	
+	public int threshold;
 	private Node tree = null;	
-	public ArrayList queue;	
+	private ArrayList queue;	
+	
 	private String finishPopulationMarker = "__finish_Population_Marker__";
 
-	public TreeThread(Object caller, String title, boolean splitWords, int threshold) {
-		this.splitWords = splitWords;
-		this.caller = caller;
+	public TreeThread(String title, boolean splitWords, int threshold) {
+		this.splitWords = splitWords;		
 		this.threshold = threshold;
 		this.title = title;
 		queue = new ArrayList();
@@ -47,9 +46,7 @@ public class TreeThread extends Thread {
 		try {
 			synchronized(queue) {
 				while(queue.isEmpty()) {
-
 					queue.wait();
-
 				}			
 				str = (String)queue.get(0);			
 				queue.remove(0);			
@@ -98,7 +95,7 @@ public class TreeThread extends Thread {
 		Node treeCount = Node.buildTreeByCount(tree, null);		
 		System.out.println(title + ": Count Tree is built");
 		StringBuffer buf = new StringBuffer();		
-		treeCount.findMostUsedWords(threshold, buf);
+		treeCount.findMostUsedWords(this, buf);
 		treeCount.printOutSortedTree(buf, title);		
 		return;
 

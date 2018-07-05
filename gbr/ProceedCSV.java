@@ -50,7 +50,8 @@ public class ProceedCSV {
 		Node treeCount = Node.buildTreeByCount(treeOfUID, null);
 		System.out.println("Count Tree is built");
 		StringBuffer buf = new StringBuffer();
-		treeCount.findMostUsedWords(10, buf);		
+		TreeThread tt = new TreeThread("", false, 10);
+		treeCount.findMostUsedWords(tt, buf);		
 		treeCount.printOutSortedTree(buf, "");
 	}
 

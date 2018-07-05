@@ -27,7 +27,7 @@ public class Node {
 		
 	private void addText(String str) {
 		StringBuffer buf = new StringBuffer(text);
-		buf.append(' ');
+		buf.append('\uFFFF');
 		buf.append(str);
 		text = buf.toString();
 	}	
@@ -97,26 +97,42 @@ public class Node {
 		return tree;
 	}
 	
-	public int findMostUsedWords(int threshold, StringBuffer buf) {
-		if (threshold <= 0)
-			return 0;
+	public void findMostUsedWords(TreeThread caller, StringBuffer buf) {
+		if (caller.threshold <= 0)
+			return;
 		if (buf == null)		
 			buf = new StringBuffer();
 		if (right != null) 
-			threshold = right.findMostUsedWords(threshold, buf);
-		if (threshold == 0)
-			return 0;				
+			right.findMostUsedWords(caller, buf);
+		if (caller.threshold <= 0)
+			return;
+		/*
 		buf.append(text);
-		buf.append(' ');
-		threshold = threshold - 1;
+		buf.append('\uFFFF');
+		caller.threshold = caller.threshold - 1;
+		for (int i = 0; i < text.length(); i++)
+			if (text.charAt(i) == '\uFFFF')		
+				caller.threshold = caller.threshold - 1;
+				*/
+		StringTokenizer st = new StringTokenizer(text, "\uFFFF", true);
+		while(st.hasMoreTokens()) {
+			String s = st.nextToken();
+			if (s.equals("\uFFFF"))
+				caller.threshold = caller.threshold - 1;
+			if (caller.threshold <= 0)
+				return;			
+			buf.append(s);
+		}
+		buf.append("\uFFFF");
+		caller.threshold = caller.threshold - 1;
 		if (left != null) 
-			threshold = left.findMostUsedWords(threshold, buf);
-		return threshold;		
+			left.findMostUsedWords(caller, buf);
+		return;		
 	}
 
 	public void printOutSortedTree(StringBuffer buf, String title) {
-		StringTokenizer st = new StringTokenizer(buf.toString());
-		Node sortTree = new Node (" ", 1);
+		StringTokenizer st = new StringTokenizer(buf.toString(), "\uFFFF");
+		Node sortTree = new Node ("", 1);
 		while(st.hasMoreTokens()) {
 			sortTree.addLeafByText(st.nextToken());
 		}		
@@ -131,9 +147,11 @@ public class Node {
 		if (currentNode == null)
 			return;		
 		printOutSortedTree(currentNode.left);
-		System.out.print("'");
-		System.out.print(currentNode.text);
-		System.out.print("' ");
+		if (currentNode.text.length() > 0) {
+			System.out.print("{");
+			System.out.print(currentNode.text);
+			System.out.print("} ");
+		}
 		printOutSortedTree(currentNode.right);								
 	}	
 	

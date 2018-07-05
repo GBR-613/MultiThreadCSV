@@ -26,19 +26,18 @@ public class ProceedCSVEx extends Thread {
 
 	public ProceedCSVEx(){
 		int threshold = 1000;
-		threadProfiles = new TreeThread(this, "Most active users", false, threshold);
-		threadFood = new TreeThread(this, "Most commented food items", false, threshold);
-		threadWords = new TreeThread(this, "Most used words", true, threshold);
+		threadProfiles = new TreeThread("Most active users", false, threshold);
+		threadFood = new TreeThread("Most commented food items", false, threshold);
+		threadWords = new TreeThread("Most used words", true, threshold);
 	}
 
 	public static void main(String[] args) {
 		ProceedCSVEx runner = new ProceedCSVEx();
 		runner.start();
+		runner.threadWords.start();
 		runner.threadProfiles.start();
-		runner.threadFood.start();
-		runner.threadWords.start();		
-
-	}
+		runner.threadFood.start();				
+	}	
 
 	public void run() {
 		String filename = "Reviews.csv";
@@ -56,7 +55,25 @@ public class ProceedCSVEx extends Thread {
 			StringBuffer sbBuf = new StringBuffer();
 
 			while ((line = bufferedReader.readLine()) != null) {
-				chBuf = line.toCharArray();				
+				st = new StringTokenizer(line, ",");
+
+				if (st.countTokens() < 9)
+					continue;
+
+				st.nextToken();
+				threadFood.addText(st.nextToken());//2nd
+				st.nextToken();						
+				threadProfiles.addText(st.nextToken());//4th
+				st.nextToken();	
+				st.nextToken();	
+				st.nextToken();	
+				st.nextToken();	
+				StringBuffer summary = new StringBuffer(st.nextToken()) ;//#9
+				while(st.hasMoreTokens()) {
+					summary.append(' ');
+					summary.append(st.nextToken()); 
+				}
+				chBuf = summary.toString().toCharArray();				
 				for(i=0; i<chBuf.length; i++) {
 					if (chBuf[i] == '<') {
 						htmlTag = true;
@@ -72,23 +89,8 @@ public class ProceedCSVEx extends Thread {
 						sbBuf.append(chBuf[i]);
 				}
 
-				st = new StringTokenizer(sbBuf.toString(), ",");
-				sbBuf.delete(0, sbBuf.length()-1);
-
-				st.nextToken();
-				threadFood.addText(st.nextToken());//2nd
-				st.nextToken();						
-				threadProfiles.addText(st.nextToken());//4th
-				st.nextToken();	
-				st.nextToken();	
-				st.nextToken();	
-				st.nextToken();	
-				StringBuffer summary = new StringBuffer(st.nextToken()) ;//#9
-				while(st.hasMoreTokens()) {
-					summary.append(' ');
-					summary.append(st.nextToken()); 
-				}
-				threadWords.addText(summary.toString());				
+				threadWords.addText(sbBuf.toString());
+				sbBuf.delete(0, sbBuf.length());
 			}
 
 			System.gc();
